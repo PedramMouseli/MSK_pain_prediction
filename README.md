@@ -49,5 +49,5 @@ jupyter notebook
 ```
 Open the notebooks/MSK_pain_prediction.ipynb notebook and follow the instructions inside.
 
-#### License
+### License
 This project is licensed under the GNU General Public License v3.0 License - see the LICENSE file for details.
