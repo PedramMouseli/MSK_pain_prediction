@@ -28,3 +28,20 @@ Clone the repository to your local machine:
 ```bash
 git clone https://github.com/your-username/MSK-Facial-Pain-Prediction.git
 cd MSK-Facial-Pain-Prediction
+
+### Usage
+
+#### Feature Extraction and Model Training
+
+You can use the provided Jupyter notebook to extract features and train the models. The notebook is designed to be run locally or on Google Colab.
+
+To run the notebook on Google Colab, click the link below:
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](link-to-google-colab-notebook)
+
+#### Running Locally
+
+To run the Jupyter notebook locally:
+
+```bash
+jupyter notebook
