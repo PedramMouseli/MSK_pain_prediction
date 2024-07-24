@@ -27,8 +27,8 @@ Ensure you have the following installed:
 Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/your-username/MSK-Facial-Pain-Prediction.git
-cd MSK-Facial-Pain-Prediction
+git clone https://github.com/PedramMouseli/MSK_pain_prediction.git
+cd MSK_pain_prediction
 ```
 ### Usage
 
