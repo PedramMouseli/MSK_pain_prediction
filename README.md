@@ -4,6 +4,7 @@
 ## Overview
 
 This repository contains the code and models developed for predicting post-MVC pain using features extracted from EMG and NIRS signals recorded from the masseter muscle during a repetitive clenching task. The project aims to provide a reliable predictive model of acute MSK facial pain based on functional muscle recordings.
+![Study_design](data/figures/Figure1.png)
 
 ## Features
 
@@ -37,7 +38,7 @@ You can use the provided Jupyter notebook to extract features and train the mode
 
 To run the notebook on Google Colab, click the link below:
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](link-to-google-colab-notebook)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/PedramMouseli/MSK_pain_prediction/blob/main/notebooks/MSK_pain_prediction.ipynb)
 
 #### Running Locally
 
@@ -45,3 +46,6 @@ To run the Jupyter notebook locally:
 
 ```bash
 jupyter notebook
+```
+Open the notebooks/MSK_pain_prediction.ipynb notebook and follow the instructions inside.
+
