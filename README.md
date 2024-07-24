@@ -28,7 +28,7 @@ Clone the repository to your local machine:
 ```bash
 git clone https://github.com/your-username/MSK-Facial-Pain-Prediction.git
 cd MSK-Facial-Pain-Prediction
-
+```
 ### Usage
 
 #### Feature Extraction and Model Training
