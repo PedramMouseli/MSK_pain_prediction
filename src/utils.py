@@ -377,3 +377,37 @@ def plot_predictions(coefs, target_df, modality, target, plot_path, save_plot=Fa
     
     if save_plot:
         fig.savefig(f'{plot_path}/prediction_{target}_{modality}.png',dpi=fig.dpi, bbox_inches = "tight")
+        
+def plot_feature_selection(support, modality, plot_path, save_plot=False):
+    feature_labels = ['sign(NIRS slope)', 'abs(NIRS slope)', 'normalized median 1-3', 'normalized median 4-6', 'normalized median 7-9', 'normalized median 10-12', 'normalized median 13-15',
+                      'sign(entropy slope)', 'abs(entropy change)', 'sign(DWT slope) level 9', 'sign(DWT slope) level 8', 'sign(DWT slope) level 7', 'sign(DWT slope) level 6', 'sign(DWT slope) level 5',
+                      'sign(DWT slope) level 4', 'sign(DWT slope) level 3', 'sign(DWT slope) level 2', 'sign(DWT slope) level 1']
+    if modality == 'EMG':
+        labels = feature_labels[7:]
+    if modality == 'NIRS':
+        labels = feature_labels[:7]
+    if modality == 'NIRS_EMG':
+        labels = np.array(feature_labels)
+        
+    occurences = np.sum(support,axis=0)
+    feat_occu_df = pd.DataFrame({'label': labels, 'occurence': occurences})
+    feat_occu_sorted = feat_occu_df.sort_values(['occurence'], ascending=False).reset_index(drop=True)
+
+    plt.figure('feature importance',figsize=[10,5])
+
+    ax = sns.barplot(x='label', y='occurence', data=feat_occu_sorted, palette="colorblind", edgecolor=".3", errorbar=None)
+    ax.bar_label(ax.containers[0], fontsize=10)
+
+    plt.xticks(rotation=70)
+    # plt.tight_layout()
+    # plt.axhline(y=0.5*len(support), color='r', linestyle='--')
+    plt.xlabel('', fontsize = 2)
+    plt.ylabel('Occurence', fontsize = 13)
+    sns.despine(right = True, top = True)
+    plt.tick_params(bottom = True, left = True)
+    
+    plt.show()
+    
+    if save_plot:
+        plt.savefig(f'{plot_path}/selected_features_{modality}.png',dpi=600)
+        
