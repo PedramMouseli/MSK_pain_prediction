@@ -16,6 +16,7 @@ import seaborn as sns
 import matplotlib.gridspec as gridspec
 import pandas as pd
 from mlxtend.evaluate import permutation_test
+import matplotlib as mpl
 
 def normalize(data, base_events=[], baseline=False, mean=True, std=True, sep_baseline=False):
     """
@@ -308,6 +309,8 @@ def plot_predictions(coefs, target_df, modality, target, plot_path, save_plot=Fa
         labels = feature_labels[:7]
     if modality == 'NIRS_EMG':
         labels = np.array(feature_labels)
+    if modality == 'NIRS_EMG_final':
+        labels = np.array(feature_labels)[[0,3,7,8,17],]
 
     ## predictions
     corr = np.corrcoef(target_df['pred_targets'],target_df['targets'])[0,1]
@@ -319,7 +322,9 @@ def plot_predictions(coefs, target_df, modality, target, plot_path, save_plot=Fa
                                method='approximate',
                                num_rounds=10000,
                                seed=42)
-        
+    
+    mpl.rcParams['figure.dpi']= 200
+    
     g0 = sns.jointplot(data=target_df, x="targets", y="pred_targets", hue="sex", space=0.5, color ='tab:blue', 
                        xlim=(target_df['targets'].min()-5, target_df['targets'].max()+5),
                        ylim=(target_df['pred_targets'].min()-5, target_df['pred_targets'].max()+5), joint_kws={'s':100}, ratio=3)
@@ -342,11 +347,15 @@ def plot_predictions(coefs, target_df, modality, target, plot_path, save_plot=Fa
     g1.legend_.set_title(None)
 
     ## weights
-    weights_dict = {'fold':np.array(range(1,11))}
-    for i,feature in enumerate(labels):
-        weights_dict[feature] = coefs[:,i]
-    weights_df = pd.DataFrame(weights_dict)
-    weights_df = pd.melt(weights_df, id_vars=['fold'], var_name='features', value_name='weights')
+    if modality == 'NIRS_EMG_final':
+        weights_dict = {'weights':coefs, 'features': labels}
+        weights_df = pd.DataFrame(weights_dict)
+    else:
+        weights_dict = {'fold':np.array(range(1,11))}
+        for i,feature in enumerate(labels):
+            weights_dict[feature] = coefs[:,i]
+        weights_df = pd.DataFrame(weights_dict)
+        weights_df = pd.melt(weights_df, id_vars=['fold'], var_name='features', value_name='weights')
 
     fig1, axes = plt.subplots(1,1)
     sns.set_style("white")
@@ -396,7 +405,9 @@ def plot_feature_selection(support, modality, plot_path, save_plot=False):
     plt.figure('feature importance',figsize=[10,5])
 
     ax = sns.barplot(x='label', y='occurence', data=feat_occu_sorted, palette="colorblind", edgecolor=".3", errorbar=None)
-    ax.bar_label(ax.containers[0], fontsize=10)
+    # ax.bar_label(ax.containers[0], fontsize=10)
+    for i in ax.containers:
+        ax.bar_label(i,)
 
     plt.xticks(rotation=70)
     # plt.tight_layout()

@@ -27,15 +27,16 @@ from sklearn.model_selection import KFold
 from mlxtend.evaluate import permutation_test
 import seaborn as sns
 import matplotlib.pyplot as plt
+from tqdm.notebook import tqdm
 import time
 
 import warnings
 warnings.simplefilter("ignore")
 
 
-def regression_fit(features, y, model, plot_path, feature_labels=[], num_iter=1, max_iter=10000,
-                   plot_pred=True, plot_weight=True, save_plot=False, feature_selection=True, selection_method='single', correct_dilution=False,
-                   inner_k=10, outer_k=10, feature_type='sub', target='Doors'):
+def regression_fit_cv(features, y, model, plot_path, feature_labels=[], num_iter=1, max_iter=10000,
+                   plot_pred=True, plot_weight=True, save_plot=False, feature_selection=True, selection_method='single',
+                   inner_k=10, outer_k=10, verbos=False, feature_type='sub', target='Doors'):
     
     if model == 'Lasso':
         reg_model = Lasso(fit_intercept=True, positive=False, max_iter=max_iter)
@@ -127,8 +128,8 @@ def regression_fit(features, y, model, plot_path, feature_labels=[], num_iter=1,
     support_all = []
     k = 1
 
-    for i in range(num_iter):
-        print('iteration '+str(i+1)+' started')
+    for i in tqdm(range(num_iter)):
+        # print('iteration '+str(i+1)+' started')
         outer_cv = KFold(outer_k, shuffle=True, random_state=i)
         inner_cv = KFold(inner_k, shuffle=True, random_state=i)
         
@@ -136,7 +137,8 @@ def regression_fit(features, y, model, plot_path, feature_labels=[], num_iter=1,
 
         for train, test in outer_cv.split(features, y):
             
-            print('processing fold: ' + str(k))
+            if verbos:
+                print('processing fold: ' + str(k))
             start = time.time()
 
             X_train, X_test = features[train], features[test]
@@ -157,7 +159,8 @@ def regression_fit(features, y, model, plot_path, feature_labels=[], num_iter=1,
                     
                 feature_selector.fit(X_train,y_train)
                 X_train = feature_selector.transform(X_train)
-                print('# selected features: ',X_train.shape[1])
+                if verbos:
+                    print('# selected features: ',X_train.shape[1])
                 if selection_method=='group':
                     support = np.full(n_features, False)
                     support[np.array(feature_selector.k_feature_idx_)] = True
@@ -209,7 +212,8 @@ def regression_fit(features, y, model, plot_path, feature_labels=[], num_iter=1,
             sex = np.append(sex, sex_test)
             
             end = time.time()
-            print('fold ' + str(k) + ' took ' + str(round(end-start, 3)) + ' seconds\n')
+            if verbos:
+                print('fold ' + str(k) + ' took ' + str(round(end-start, 3)) + ' seconds\n')
             k +=1
     
     support_all = np.array(support_all)
@@ -278,4 +282,41 @@ def regression_fit(features, y, model, plot_path, feature_labels=[], num_iter=1,
             if save_plot:
                 plt.savefig(plot_path+'/weights_'+model+'_'+target+'_'+feature_type+'.png',dpi=600)
     
-    return target_df, scores, coefs, feature_imp, corr, p_val, best_model, support_all
+    return target_df, scores, coefs, feature_imp, corr, p_val, support_all
+
+
+def regression_fit(features, y, sex, max_iter=10000):
+    
+    # define model
+    reg_model = PLSCanonical(max_iter=max_iter, n_components=1)
+    p_grid = {"model__tol": [1e-5, 1e-6, 1e-7, 1e-8]}
+    
+    # create pipeline
+    scale = StandardScaler()
+    regressor = Pipeline(steps=[("scaler", scale), ("model", reg_model)])
+    
+    # find optimal model parameters
+    inner_cv = KFold(10, shuffle=True, random_state=42)
+    nested_model = GridSearchCV(estimator=regressor, param_grid=p_grid, cv=inner_cv, scoring='neg_mean_squared_error')
+    
+    nested_model.fit(features, y)
+    best_model = nested_model.best_estimator_
+    
+    # training
+    best_model.fit(features, y)
+    
+    # model weights
+    coefs = np.squeeze(best_model.named_steps['model'].coef_)
+    
+    # prediction on training data
+    pred_targets = best_model.predict(features)
+    
+    sex = sex.astype(str)
+    sex[sex=='0'] = 'Female'
+    sex[sex=='1'] = 'Male'
+    
+    data_dict = {'targets':y, 'pred_targets':pred_targets, 'sex':sex}
+    target_df = pd.DataFrame(data_dict)
+    
+    
+    return target_df, coefs, best_model
